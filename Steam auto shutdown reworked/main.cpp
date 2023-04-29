@@ -9,6 +9,6 @@ void main(array<String^>^ args)
 {
 	Application::EnableVisualStyles();
 	Application::SetCompatibleTextRenderingDefault(false);
-	Steamautoshutdownreworked::Form form;
+	Steamautoshutdownreworked::Interface form;
 	Application::Run(% form);
 }

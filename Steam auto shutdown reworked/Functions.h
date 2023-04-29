@@ -6,6 +6,8 @@
 #include <vector>
 #include <Windows.h>
 
+#pragma comment (lib,"Advapi32.lib")
+
 std::string GetSteamPath()
 {
 	HKEY hkey;
@@ -94,10 +96,12 @@ void StoreStateFlagInfo(std::vector<std::string> &Paths, std::vector<std::string
 	}
 }
 
-void CheckStateFlags(std::vector<std::string> &CheckPaths)
+void CheckStateFlags(std::vector<std::string> &CheckPaths,bool &TerminateThread)
 {
 	while (true)
 	{
+		if (TerminateThread == false)
+			break;
 		for (int i = 0; i < CheckPaths.size(); i++)
 		{
 			std::fstream file;
@@ -121,6 +125,6 @@ void CheckStateFlags(std::vector<std::string> &CheckPaths)
 				}
 			}
 		}
-		Sleep(10000);
+		Sleep(1000);
 	}
 }

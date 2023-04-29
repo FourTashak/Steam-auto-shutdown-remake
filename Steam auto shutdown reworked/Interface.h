@@ -13,6 +13,7 @@ namespace Steamautoshutdownreworked {
 	std::string Steampath;
 	std::vector<std::string> LibraryPaths;
 	std::vector<std::string> AppStateFlags;
+	bool EnableDis = false;
 
 	public ref class Interface : public System::Windows::Forms::Form
 	{
@@ -22,6 +23,7 @@ namespace Steamautoshutdownreworked {
 			InitializeComponent();
 			Steampath = GetSteamPath();
 			GetLibraryPaths(Steampath,LibraryPaths);
+			Enable_btn->BackColor = Color::Red;
 		}
 
 	protected:
@@ -38,16 +40,9 @@ namespace Steamautoshutdownreworked {
 	private: System::ComponentModel::BackgroundWorker^ Worker1;
 
 	private:
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
 		System::ComponentModel::Container ^components;
 
 #pragma region Windows Form Designer generated code
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
 		void InitializeComponent(void)
 		{
 			this->Enable_btn = (gcnew System::Windows::Forms::Button());
@@ -79,6 +74,7 @@ namespace Steamautoshutdownreworked {
 			// 
 			// Worker1
 			// 
+			this->Worker1->WorkerSupportsCancellation = true;
 			this->Worker1->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &Interface::Worker1_DoWork);
 			// 
 			// Interface
@@ -96,8 +92,24 @@ namespace Steamautoshutdownreworked {
 #pragma endregion
 	private: System::Void Enable_btn_Click(System::Object^ sender, System::EventArgs^ e) 
 	{
-		StoreStateFlagInfo(LibraryPaths,AppStateFlags);
-		Worker1->RunWorkerAsync();
+		do
+		{
+			if (EnableDis == false)
+			{
+				StoreStateFlagInfo(LibraryPaths, AppStateFlags);
+				EnableDis = !EnableDis;
+				Enable_btn->BackColor = Color::Green;
+				Worker1->RunWorkerAsync();
+				continue;
+			}
+			if (EnableDis == true)
+			{
+				Worker1->CancelAsync();
+				EnableDis = !EnableDis;
+				Enable_btn->BackColor = Color::Red;
+				continue;
+			}
+		} while (false);
 	}
 	private: System::Void Cancel_Sch_btn_Click(System::Object^ sender, System::EventArgs^ e) 
 	{
@@ -105,7 +117,7 @@ namespace Steamautoshutdownreworked {
 	}
 	private: System::Void Worker1_DoWork(System::Object^ sender, System::ComponentModel::DoWorkEventArgs^ e) 
 	{
-		CheckStateFlags(AppStateFlags);
+		CheckStateFlags(AppStateFlags,EnableDis);
 	}
 	};
 }
