@@ -56,7 +56,21 @@ void GetLibraryPaths(std::string steam_path, std::vector<std::string> &Paths)
 	}
 }
 
-void StoreStateFlagInfo(std::vector<std::string> &Paths, std::vector<std::string> &CheckPaths)
+class Games
+{
+public:
+	Games(){}
+
+	Games(std::string path, std::string name)
+	{
+		Path = path;
+		Name = name;
+	}
+	std::string Path;
+	std::string Name;
+};
+
+void StoreStateFlagInfo(std::vector<std::string> &Paths, std::vector<Games> &CheckPaths)
 {
 	std::string fname;
 	std::string Name = "appmanifest";
@@ -77,15 +91,23 @@ void StoreStateFlagInfo(std::vector<std::string> &Paths, std::vector<std::string
 				{
 					std::string Line;
 					std::string ToDownload;
+					std::string GameName;
 					while (std::getline(file, Line))
 					{
+						if (Line.find("name") != std::string::npos)
+						{
+							GameName = Line.substr(10, Line.size());
+							GameName.resize(GameName.size() - 1);
+						}
+
 						if (Line.find("StateFlags") != std::string::npos)
 						{
+
 							ToDownload = Line.substr(16, Line.size());
 							ToDownload.resize(ToDownload.size() - 1);
 							if (std::stoi(ToDownload) == 1026 || std::stoi(ToDownload) == 1030)
 							{
-								CheckPaths.push_back(fname);
+								CheckPaths.push_back(Games(fname,GameName)); //fname
 							}
 						}
 					}
@@ -96,7 +118,7 @@ void StoreStateFlagInfo(std::vector<std::string> &Paths, std::vector<std::string
 	}
 }
 
-void CheckStateFlags(std::vector<std::string> &CheckPaths,bool &TerminateThread)
+void CheckStateFlags(std::vector<Games> &CheckPaths,bool &TerminateThread)
 {
 	while (true)
 	{
@@ -106,7 +128,7 @@ void CheckStateFlags(std::vector<std::string> &CheckPaths,bool &TerminateThread)
 		{
 			std::fstream file;
 			std::string line;
-			file.open(CheckPaths[i], std::ios::in);
+			file.open(CheckPaths[i].Path, std::ios::in);
 			std::string Stateflag;
 			while (std::getline(file, line))
 			{
