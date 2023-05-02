@@ -29,10 +29,45 @@ std::string GetSteamPath()
 
 		RegCloseKey(hkey);
 	}
+	else if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\WOW6432Node\\Valve\\Steam", 0, KEY_READ, &hkey) == ERROR_SUCCESS)
+	{
+		char path[MAX_PATH];
+		DWORD path_size = sizeof(path);
+
+		if (RegQueryValueEx(hkey, L"InstallPath", nullptr, nullptr, (LPBYTE)path, &path_size) == ERROR_SUCCESS)
+		{
+			for (int i = 0; i < path_size; i++)
+			{
+				if (path[i] != '\0')
+					steam_path += path[i];
+			}
+		}
+		RegCloseKey(hkey);
+	}
+	else if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Valve\\Steam", 0, KEY_READ, &hkey) == ERROR_SUCCESS)
+	{
+		char path[MAX_PATH];
+		DWORD path_size = sizeof(path);
+
+		if (RegQueryValueEx(hkey, L"InstallPath", nullptr, nullptr, (LPBYTE)path, &path_size) == ERROR_SUCCESS)
+		{
+			for (int i = 0; i < path_size; i++)
+			{
+				if (path[i] != '\0')
+					steam_path += path[i];
+			}
+		}
+		RegCloseKey(hkey);
+	}
+	else if (steam_path.size() == 0)
+	{
+		steam_path = "error";
+	}
+
 	return steam_path;
 }
 
-void GetLibraryPaths(std::string steam_path, std::vector<std::string> &Paths)
+bool GetLibraryPaths(std::string steam_path, std::vector<std::string> &Paths)
 {
 	std::string Name = "appmanifest";
 	std::string fname;
@@ -53,6 +88,11 @@ void GetLibraryPaths(std::string steam_path, std::vector<std::string> &Paths)
 				Paths.push_back(Thispath.substr(0, (Thispath.size() - 1)) + "\\steamapps");
 			}
 		}
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 
@@ -147,6 +187,6 @@ void CheckStateFlags(std::vector<Games> &CheckPaths,bool &TerminateThread)
 				}
 			}
 		}
-		Sleep(1000);
+		Sleep(50);
 	}
 }
